@@ -1,0 +1,577 @@
+/* ==========================================
+   TOKENS
+========================================== */
+:root { --cell-pad: 18px 20px; }
+
+/* DARK (default) */
+[data-theme="dark"] {
+  --bg:              #000000;
+  --fg:              #ffffff;
+  --fg-dim:          #888888;
+  --fg-mid:          #555555;
+  --border-c:        #333333;
+  --border:          1px solid #333333;
+  --sep:             #444444;
+  --cell-sub:        #aaaaaa;
+  --cell-rule:       #222222;
+  --placeholder-border: #333;
+  --placeholder-text:   #444;
+  --glass-bg:        rgba(0, 0, 0, 0.45);
+  --glass-border:    rgba(255, 255, 255, 0.13);
+  --glass-shadow:    0 4px 32px rgba(0, 0, 0, 0.5);
+}
+
+/* LIGHT */
+[data-theme="light"] {
+  --bg:              #ffffff;
+  --fg:              #000000;
+  --fg-dim:          #777777;
+  --fg-mid:          #555555;
+  --border-c:        #000000;
+  --border:          1px solid #000000;
+  --sep:             #cccccc;
+  --cell-sub:        #222222;
+  --cell-rule:       #e0e0e0;
+  --placeholder-border: #aaa;
+  --placeholder-text:   #aaa;
+  --glass-bg:        rgba(255, 255, 255, 0.55);
+  --glass-border:    rgba(0, 0, 0, 0.10);
+  --glass-shadow:    0 4px 32px rgba(0, 0, 0, 0.08);
+}
+
+/* ==========================================
+   RESET
+========================================== */
+*, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+html { font-size: 16px; -webkit-text-size-adjust: 100%; scroll-behavior: auto; }
+
+body {
+  font-family: 'Courier Prime', 'Courier New', Courier, monospace;
+  background: var(--bg);
+  color: var(--fg);
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+a { color: var(--fg); text-decoration: underline; text-underline-offset: 2px; }
+a:hover { background: var(--fg); color: var(--bg); text-decoration: none; }
+
+
+/* ==========================================
+   SCROLL BLUR BACKGROUND
+========================================== */
+.scroll-blur {
+  position: fixed;
+  top: 0; left: 0; right: 0;
+  height: 52px; /* Just tall enough to background the top pills */
+  background: var(--glass-bg);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  border-bottom: 1px solid var(--glass-border);
+  z-index: 990; /* Sits beneath the buttons (z-1000+) */
+  opacity: 0;
+  transition: opacity 0.35s ease;
+  pointer-events: none;
+}
+.scroll-blur.visible {
+  opacity: 1;
+}
+
+/* ==========================================
+   FLOATING PILL BASE (Aligned top navigation)
+========================================== */
+.float-pill {
+  border-radius: 50px;
+  padding: 7px 18px;
+  font-family: 'Courier Prime', 'Courier New', Courier, monospace;
+  font-size: 0.65em;
+  letter-spacing: 0.2em;
+  text-decoration: none;
+  color: var(--fg);
+  border: 1px solid var(--glass-border);
+  white-space: nowrap;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  line-height: 1;
+  background: var(--glass-bg);
+  backdrop-filter: blur(20px) saturate(160%);
+  -webkit-backdrop-filter: blur(20px) saturate(160%);
+  box-shadow: var(--glass-shadow);
+  transition: background 0.2s, color 0.2s, width 0.2s, padding 0.2s;
+  cursor: pointer;
+}
+.float-pill:hover { background: var(--fg); color: var(--bg); }
+
+/* Left (Home) */
+.float-left {
+  position: fixed;
+  top: 14px;
+  left: 16px;
+  z-index: 1001;
+}
+
+/* Right (Theme) */
+.float-theme {
+  position: fixed;
+  top: 14px;
+  right: 16px;
+  z-index: 1001;
+}
+
+/* Center (Header) */
+.float-header {
+  position: fixed;
+  top: 14px;
+  left: 50%;
+  transform: translateX(-50%) translateY(-16px);
+  display: flex;
+  gap: 8px;
+  z-index: 1000;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.32s ease, transform 0.32s ease;
+}
+.float-header.visible {
+  opacity: 1;
+  pointer-events: auto;
+  transform: translateX(-50%) translateY(0);
+}
+.float-contact { font-weight: 700; }
+.float-mg {
+  display: none;
+  font-weight: 700;
+}
+/* Hide mobile icons on desktop */
+.pill-icon { display: none; width: 14px; height: 14px; flex-shrink: 0; }
+
+/* Desktop text-based Theme toggle dot */
+.toggle-icon {
+  width: 9px; height: 9px;
+  border: 1px solid currentColor;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+[data-theme="dark"]  .toggle-icon { background: currentColor; }
+[data-theme="light"] .toggle-icon { background: transparent; }
+[data-theme="dark"]  .toggle-label::after { content: "LIGHT"; }
+[data-theme="light"] .toggle-label::after { content: "DARK"; }
+
+/* ==========================================
+   MAIN WRAPPER
+========================================== */
+main {
+  flex: 1;
+  border-left: var(--border);
+  border-right: var(--border);
+  max-width: 1100px;
+  width: 100%;
+  margin: 0 auto;
+}
+
+/* ==========================================
+   HERO — photo (40%) + info (60%)
+========================================== */
+.cv-hero {
+  display: grid;
+  grid-template-columns: 4fr 6fr;
+  border-top: var(--border);
+  border-bottom: var(--border);
+  min-height: 500px;
+}
+
+/* Framed Image Fix (Landscape cropping avoidance) */
+.hero-photo {
+  position: relative;
+  background: var(--bg);
+  border-right: var(--border);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 56px 32px;
+}
+
+.photo-frame {
+  position: relative;
+  width: 100%;
+  max-width: 340px; 
+  aspect-ratio: 3 / 4; /* Maintains pure portrait orientation */
+  border: var(--border);
+  border-radius: 6px;
+  overflow: hidden;
+  background: var(--bg);
+}
+
+.cv-photo {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: top center;
+  display: block;
+}
+
+/* Light / Dark Mode Image Splitting */
+[data-theme="dark"] .photo-light { display: none; }
+[data-theme="light"] .photo-dark { display: none; }
+
+.photo-placeholder {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  border: 1px dashed var(--placeholder-border);
+  margin: 16px;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background: var(--bg);
+}
+
+.photo-placeholder-inner {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  text-align: center;
+  color: var(--placeholder-text);
+  font-size: 0.6em;
+  letter-spacing: 0.12em;
+}
+.photo-placeholder-inner svg circle,
+.photo-placeholder-inner svg path { stroke: var(--placeholder-text); }
+
+.hero-info {
+  padding: 44px 40px;
+  display: flex;
+  position: relative;
+  flex-direction: column;
+  justify-content: center;
+  gap: 36px;
+}
+
+/* ==========================================
+   HERO METRICS
+========================================== */
+
+.hero-metrics {
+  position: absolute;
+
+  top: 50%;
+  right: 52px;
+
+  transform: translateY(-50%);
+
+  display: flex;
+  flex-direction: column;
+  gap: 48px;
+
+  font-family: 'Courier Prime', monospace;
+
+  color: var(--fg-dim);
+  opacity: 0.45;
+
+  text-align: center;
+}
+
+.metric-item {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.metric-logo {
+  width: 40px;
+  height: 40px;
+  margin: 0 auto;
+
+  color: var(--fg-dim);
+
+  opacity: 0.9;
+}
+
+.metric-label {
+  font-size: 0.75rem;
+  letter-spacing: 0.15em;
+}
+
+.metric-value {
+  font-size:1.35rem;
+  line-height: 1;
+  letter-spacing: 0.05em;
+}
+
+a.metric-item {
+    text-decoration: none; /* Removes the underline */
+    color: inherit;        /* Keeps your existing text color */
+    cursor: pointer;       /* Ensures it shows a hand pointer on hover */
+}
+
+/* ==========================================
+   NAME BLOCK
+========================================== */
+.cv-nameblock h1 {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: clamp(8rem, 6vw, 6.5rem);
+  letter-spacing: 0.06em;
+  line-height: 1;
+}
+.cv-title {
+  font-size: 1.65em;
+  letter-spacing: 0.28em;
+  margin-top: 5px;
+  color: var(--fg-dim);
+}
+
+/* ==========================================
+   CONTACT LIST
+========================================== */
+.cv-contact {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+  font-size: 0.9em;
+  font-style: normal;
+  letter-spacing: 0.04em;
+}
+.contact-item  { display: flex; align-items: center; gap: 8px; }
+.contact-label { font-size: 0.75em; letter-spacing: 0.18em; color: var(--fg-dim); font-weight: 700; min-width: 64px; flex-shrink: 0; }
+.contact-sep   { display: none; }
+
+/* ==========================================
+   BODY GRID
+========================================== */
+.cv-body {
+  display: grid;
+  grid-template-columns: 280px 1fr;
+  grid-template-areas:
+    "left right"
+    "bottom bottom";
+}
+.col-left   { grid-area: left;   border-right: var(--border); display: flex; flex-direction: column; }
+.col-right  { grid-area: right;  display: flex; flex-direction: column; }
+.col-bottom { grid-area: bottom; display: grid; grid-template-columns: 1fr 2fr; border-top: var(--border); }
+
+/* ==========================================
+   CELLS
+========================================== */
+.cell { padding: var(--cell-pad); }
+.cell-label {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 0.7em;
+  letter-spacing: 0.32em;
+  color: var(--fg-dim);
+  margin-bottom: 10px;
+  border-bottom: 1px solid var(--cell-rule);
+  padding-bottom: 6px;
+}
+.cell-summary { flex: 1; }
+.cell-summary p { font-size: 0.82em; line-height: 1.7; color: var(--cell-sub); font-style: italic; }
+.cell-section-header { border-bottom: var(--border); padding: 10px 20px; }
+.cell-section-header .cell-label { margin-bottom: 0; border-bottom: none; padding-bottom: 0; color: var(--fg); font-size: 0.8em; }
+
+.cell-job { border-bottom: var(--border); }
+.cell-job:last-child { border-bottom: none; flex: 1; }
+.job-meta  { margin-bottom: 10px; }
+.job-title { font-size: 0.95em; font-weight: 700; letter-spacing: 0.04em; line-height: 1.2; }
+.job-info  { font-size: 0.7em; color: var(--fg-mid); letter-spacing: 0.06em; margin-top: 3px; display: flex; align-items: center; flex-wrap: wrap; }
+.job-company { font-weight: 700; color: var(--fg); }
+.job-sep     { margin: 0 6px; color: var(--sep); }
+.job-current { color: var(--fg); font-weight: 700; }
+
+.job-points { list-style: none; padding: 0; display: flex; flex-direction: column; gap: 4px; }
+.job-points li { font-size: 0.78em; line-height: 1.55; color: var(--cell-sub); padding-left: 16px; position: relative; }
+.job-points li::before { content: '·'; position: absolute; left: 4px; color: var(--fg); }
+
+.cell-education { border-right: var(--border); }
+.edu-degree { font-size: 0.85em; font-weight: 700; line-height: 1.3; margin-bottom: 4px; margin-top: 4px; }
+.edu-info   { font-size: 0.7em; color: var(--fg-mid); letter-spacing: 0.04em; display: flex; align-items: center; flex-wrap: wrap; }
+
+.skills-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 0; margin-top: 4px; }
+.skill-group { padding-right: 16px; }
+.skill-group + .skill-group { padding-left: 16px; border-left: var(--border); padding-right: 0; }
+.skill-group-label { font-size: 0.6em; letter-spacing: 0.22em; color: var(--fg-dim); margin-bottom: 6px; font-family: 'Bebas Neue', sans-serif; font-weight: 400; }
+.skill-list { list-style: none; padding: 0; display: flex; flex-direction: column; gap: 3px; }
+.skill-list li { font-size: 0.75em; line-height: 1.45; color: var(--cell-sub); padding-left: 12px; position: relative; }
+.skill-list li::before { content: '·'; position: absolute; left: 2px; color: var(--fg); }
+
+/* ==========================================
+   DOWNLOAD CV SECTION
+========================================== */
+.cv-download-wrapper {
+  display: flex;
+  justify-content: center;
+  padding: 32px 20px;
+  border-top: var(--border);
+  border-left: var(--border);
+  border-right: var(--border);
+  max-width: 1100px;
+  width: 100%;
+  margin: 0 auto;
+}
+.download-pill {
+  font-weight: 700;
+  font-size: 0.75em;
+  padding: 10px 24px;
+}
+
+/* ==========================================
+   FOOTER
+========================================== */
+.cv-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 20px;
+  border-top: var(--border);
+  border-left: var(--border);
+  border-right: var(--border);
+  font-size: 0.6em;
+  letter-spacing: 0.18em;
+  color: var(--fg-dim);
+  max-width: 1100px;
+  width: 100%;
+  margin: 0 auto;
+}
+.footer-back { font-weight: 700; color: var(--fg); text-decoration: none; letter-spacing: 0.12em; font-size: 1.05em; }
+.footer-back:hover { background: var(--fg); color: var(--bg); }
+
+/* ==========================================
+   PRINT — force light, hide floats
+========================================== */
+@media print {
+  .float-left, .float-theme, .float-header, .scroll-blur, .cv-footer, .cv-download-wrapper { display: none; }
+  body { font-size: 11pt; background: #fff !important; color: #000 !important; }
+  main { max-width: 100%; border: none; }
+  .cv-hero { border: none; border-bottom: 1pt solid #000; min-height: 0; grid-template-columns: 180px 1fr; }
+  .hero-photo { padding: 0; border: none; }
+  .photo-frame { border: none; border-radius: 0; }
+  a { text-decoration: none; }
+}
+
+/* ==========================================
+   RESPONSIVENESS: iPAD / TABLET (≤ 1150px)
+   Prevents edge buttons overlapping main frame border
+========================================== */
+@media (max-width: 1150px) {
+  main, .cv-download-wrapper, .cv-footer {
+    border-left: none;
+    border-right: none;
+  }
+}
+
+@media (min-width: 820px) and (max-width: 1200px) and (orientation: landscape) {
+
+  .float-left {
+    left: 42px;
+  }
+
+  .float-theme {
+    right: 42px;
+  }
+
+}
+
+@media (max-width: 900px) {
+  .cv-hero { min-height: 360px; }
+  .hero-info { padding: 28px 24px; gap: 20px; }
+  .cv-body { grid-template-columns: 220px 1fr; }
+}
+
+
+
+/* ==========================================
+   MOBILE (≤ 700px)
+========================================== */
+@media (max-width: 700px) {
+  /* 30:70 split */
+  .cv-hero { grid-template-columns: 5fr 5fr; min-height: 0; }
+  .hero-photo { padding:0.1px 12px; }
+  
+  .hero-info { padding: 16px; gap: 12px; justify-content: center; }
+  .cv-nameblock h1 { font-size: clamp(3.5rem, 5.5vw, 2.4rem); }
+  .cv-title { font-size: 0.55em; letter-spacing: 0.18em; }
+
+  .cv-contact { font-size: 0.62em; gap: 5px; }
+  .contact-label { min-width: 48px; font-size: 0.8em; }
+
+  /* Stack CV body */
+  .cv-body { display: flex; flex-direction: column; }
+  .col-left { border-right: none; }
+  .col-right { border-top: var(--border); }
+  .col-bottom { grid-template-columns: 1fr; }
+  .cell-education { border-right: none; border-bottom: var(--border); }
+  .skills-grid { grid-template-columns: 1fr 1fr; }
+  .skill-group + .skill-group:last-child { grid-column: span 2; }
+  
+  /* allignment */
+  .float-left,
+  .float-theme,
+  .float-header {
+    top: 12px;
+  }
+
+  /* mg pill */
+  .float-mg {
+    display: inline-flex;
+
+    width: 36px;
+    height: 36px;
+    padding: 0;
+
+    border-radius: 50%;
+    justify-content: center;
+  }
+
+  /* Convert outer pills into clean Circles */
+  .float-home, .theme-toggle {
+    width: 36px; height: 36px;
+    padding: 0;
+    border-radius: 50%;
+  }
+    .float-left {
+    opacity: 0;
+    pointer-events: none;
+    transform: translateY(-16px);
+    transition:
+      opacity 0.32s ease,
+      transform 0.32s ease;
+  }
+
+  .float-left.visible {
+    opacity: 1;
+    pointer-events: auto;
+    transform: translateY(0);
+  }  
+
+  .hero-metrics {
+  display: none;
+}
+
+  /* Swap text out for Icons */
+  .pill-label, .toggle-label, .toggle-icon, .float-name { display: none; }
+  .float-home .icon-home { display: block; width: 16px; height: 16px; }
+  
+  [data-theme="dark"] .theme-toggle .icon-sun { display: block; width: 16px; height: 16px; }
+  [data-theme="light"] .theme-toggle .icon-moon { display: block; width: 16px; height: 16px; }
+
+  .cv-footer { flex-direction: column; gap: 4px; align-items: flex-start; padding: 10px 16px; }
+}
+
+/* ==========================================
+   NARROW MOBILE (≤ 420px)
+========================================== */
+@media (max-width: 420px) {
+  .cv-nameblock h1 { font-size: 1.5rem; }
+  .cv-contact { font-size: 0.58em; }
+
+  .skills-grid { grid-template-columns: 1fr; }
+  .skill-group + .skill-group:last-child { grid-column: span 1; }
+  .skill-group + .skill-group {
+    border-left: none;
+    padding-left: 0;
+    border-top: var(--border);
+    padding-top: 12px;
+    margin-top: 8px;
+  }
+}

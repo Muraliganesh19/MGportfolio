@@ -19,7 +19,7 @@
             <div class="section-content">
                 <h2>My CV</h2>
                 <p>View my professional experience, skills, and qualifications</p>
-                <a href="cv.html" class="button">View CV</a>
+                <a href="cvpage/cv.html" class="button">View CV</a>
             </div>
         </section>
 
@@ -31,7 +31,7 @@
             <div class="section-content">
                 <h2>Portfolio</h2>
                 <p>Explore my projects and creative work</p>
-                <a href="portfolio.html" class="button">View Portfolio</a>
+                <a href="portfoliopage/portfolio.html" class="button">View Portfolio</a>
             </div>
         </section>
     </main>
@@ -46,41 +46,9 @@
     <footer class="footer">
         <p>&copy; 2026 MURALI GANESH. All rights reserved.</p>
     </footer>
-
 <!-- Transition Curtain -->
 <div class="page-transition"></div>
 
-<script>
-    const buttons = document.querySelectorAll('.button');
-    const curtain = document.querySelector('.page-transition');
-
-    buttons.forEach(button => {
-        button.addEventListener('click', function (e) {
-            e.preventDefault();
-
-            const target = this.getAttribute('href');
-
-            // Reset classes
-            curtain.classList.remove('to-left', 'to-right');
-
-            // Detect which button
-            if (target.includes('cv')) {
-                curtain.classList.add('to-left');
-            } else {
-                curtain.classList.add('to-right');
-            }
-
-            // Start animation
-            requestAnimationFrame(() => {
-                curtain.classList.add('active');
-            });
-
-            setTimeout(() => {
-                window.location.href = target;
-            }, 850);
-        });
-    });
-</script>
-
+<script src="script.js"></script>
 </body>
 </html>
